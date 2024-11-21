@@ -1,0 +1,35 @@
+# configs/pcs_unit_config.yaml
+
+battery:
+  dynamic_type: "model_based"              # Options: "model_based", "data_driven"
+  model_type: "deterministic_battery"      # Specify the concrete model type
+  model_parameters:
+    min: 0.0                              # Minimum state of charge (MWh)
+    max: 100.0                            # Maximum state of charge (MWh)
+    charge_rate_max: 4.0                    # Maximum charging rate (MW)
+    discharge_rate_max: 2.0                 # Maximum discharging rate (MW)
+    charge_efficiency: 0.4                 # Charging efficiency (0 < charge_efficiency <= 1)
+    discharge_efficiency: 0.6              # Discharging efficiency (0 < discharge_efficiency <= 1)
+    init: 30.0                             # Initial state of charge (MWh)
+    lifetime_constant: 100.0               # Lifetime constant (> 0), adjust as needed
+
+production_unit:
+  dynamic_type: "model_based"              # Options: "model_based", "data_driven"
+  model_type: "deterministic_production"   # Specify the concrete model type
+  model_parameters:
+    production_capacity: 50.0              # Production capacity (MWh)
+    peak_production: 50.0                  # Maximum production (MWh)
+    peak_time: 0.5                          # Peak at midday (fraction of day)
+    width: 0.1                              # Width of the peak
+
+consumption_unit:
+  dynamic_type: "model_based"              # Options: "model_based", "data_driven"
+  model_type: "deterministic_consumption"  # Specify the concrete model type
+  model_parameters:
+    consumption_capacity: 45.0             # Consumption capacity (MWh)
+    peak_consumption1: 20.0                 # First peak consumption (MWh)
+    peak_time1: 0.4                          # First peak at midday (fraction of day)
+    width1: 0.05                             # Width of the first peak
+    peak_consumption2: 25.0                 # Second peak consumption (MWh)
+    peak_time2: 0.7                          # Second peak in the evening (fraction of day)
+    width2: 0.05                             # Width of the second peak
