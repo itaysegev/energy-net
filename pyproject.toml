@@ -1,0 +1,57 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "EnergyNet"
+version = "1.0.0"
+description = "A Gymnasium-compatible environment for simulating an energy network with battery storage, production, and consumption capabilities."
+readme = "README.md"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+license = { text = "MIT" }
+homepage = "https://github.com/yourusername/EnergyNet"
+repository = "https://github.com/yourusername/EnergyNet"
+keywords = ["energy", "smart grid", "simulation", "gymnasium", "reinforcement learning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Information Analysis"
+]
+
+[project.dependencies]
+gymnasium = "^0.28.0"
+numpy = "^1.21.0"
+PyYAML = "^5.4.1"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "flake8",
+    "mypy",
+    "black",
+    "isort"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+files = ["energy_net_env.py", "components/", "isos/", "pcs_unit/", "dynamics/"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=energy_net_env --cov-report=term-missing"
