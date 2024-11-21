@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'gymnasium>=0.26.0',
         'numpy',
+        'pandas',
         'pyyaml',  # If using YAML for configurations
         # Add other dependencies as needed
     ],
