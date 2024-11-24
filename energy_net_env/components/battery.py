@@ -68,7 +68,8 @@ class Battery(GridEntity):
             discharge_rate_max=self.discharge_rate_max
         )
         self.logger.info(f"Battery energy level changed from {previous_energy} MWh to {self.energy_level} MWh")
-
+        self.energy_change = self.energy_level - previous_energy
+        
     def get_state(self) -> float:
         """
         Retrieves the current energy level of the battery.

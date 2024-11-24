@@ -82,6 +82,7 @@ class PCSUnit:
         # Update Battery with the action
         self.battery.update(time=time, action=battery_action)
         self.logger.debug(f"Battery updated to energy level: {self.battery.get_state()} MWh")
+        
 
         # Update ProductionUnit (no action required)
         self.production_unit.update(time=time, action=0.0)
@@ -112,3 +113,13 @@ class PCSUnit:
         consumption = self.consumption_unit.get_state()
         self.logger.debug(f"Retrieved self-consumption: {consumption} MWh")
         return consumption
+    
+    def get_energy_change(self) -> float:
+        """
+        Retrieves the energy change in the battery.
+
+        Returns:
+            float: Energy change in MWh.
+        """
+        self.logger.debug(f"Retrieving energy change: {self.battery.energy_change} MWh")
+        return self.battery.energy_change
