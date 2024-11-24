@@ -22,6 +22,11 @@ from energy_net_env.utils.iso_factory import iso_factory
 from energy_net_env.utils.logger import setup_logger  # Import the logger setup
 
 
+# Import all reward classes
+from energy_net_env.rewards.base_reward import BaseReward
+from energy_net_env.rewards.cost_reward import CostReward
+
+
 class EnergyNetEnv(gym.Env):
     """
     A Gymnasium-compatible environment for simulating an energy network with
@@ -47,7 +52,8 @@ class EnergyNetEnv(gym.Env):
         env_config_path: Optional[str] = 'configs/environment_config.yaml',
         iso_config_path: Optional[str] = 'configs/iso_config.yaml',
         pcs_unit_config_path: Optional[str] = 'configs/pcs_unit_config.yaml',
-        log_file: Optional[str] = 'logs/environment.log'  # Path to the log file
+        log_file: Optional[str] = 'logs/environment.log',  # Path to the log file
+        reward_type: str = 'cost'  # New parameter to specify the reward type
     ):
         """
         Constructs an instance of EnergyNetEnv.
@@ -58,6 +64,7 @@ class EnergyNetEnv(gym.Env):
             iso_config_path: Path to the ISO YAML configuration file.
             pcs_unit_config_path: Path to the PCSUnit YAML configuration file.
             log_file: Path to the log file for environment logging.
+            reward_type: Type of reward function to use.
         """
         super().__init__()  # Initialize the parent class
 
@@ -143,7 +150,7 @@ class EnergyNetEnv(gym.Env):
         self.logger.info("Initialized PCSUnit with all components.")
 
         # Define Action Space
-        energy_config: Dict[str, Any] = self.env_config.get('energy', {})
+        energy_config: Dict[str, Any] = self.pcs_unit_config['battery']['model_parameters']
         self.action_space: spaces.Box = spaces.Box(
             low=-energy_config['discharge_rate_max'], # specifies the maximum rate at which energy can be discharged from the energy storage system per unit time in the environment.
             high=energy_config['charge_rate_max'], # specifies the maximum rate at which energy can be charged into the energy storage system per unit time in the environment.
@@ -178,7 +185,7 @@ class EnergyNetEnv(gym.Env):
         self.rng = np.random.default_rng()
         self.avg_price: float = 0.0
         self.energy_lvl: float = energy_config['init']
-        self.reward_type: int = 0  # Default reward type
+        self.reward_type: int = 0
         self.count: int = 0        # Step counter
         self.terminated: bool = False
         self.truncated: bool = False
@@ -188,7 +195,32 @@ class EnergyNetEnv(gym.Env):
         self.time_step_duration: float = self.env_config.get('time', {}).get('step_duration', 5)  # in minutes
         self.max_steps_per_episode: int = self.env_config.get('time', {}).get('max_steps_per_episode', 288)
 
+        # Initialize the Reward Function
+        self.logger.info(f"Setting up reward function: {reward_type}")
+        self.reward: BaseReward = self._initialize_reward(reward_type)
+        
+        
         self.logger.info("EnergyNetEnv initialization complete.")
+        
+    def _initialize_reward(self, reward_type: str) -> BaseReward:
+        """
+        Initializes the reward function based on the specified type.
+
+        Args:
+            reward_type (str): Type of reward ('cost').
+
+        Returns:
+            BaseReward: An instance of a reward class.
+        
+        Raises:
+            ValueError: If an unsupported reward_type is provided.
+        """
+        if reward_type == 'cost':
+            return CostReward()
+        
+        else:
+            self.logger.error(f"Unsupported reward type: {reward_type}")
+            raise ValueError(f"Unsupported reward type: {reward_type}")
 
     def load_config(self, config_path: str) -> Dict[str, Any]:
         """
@@ -245,7 +277,7 @@ class EnergyNetEnv(gym.Env):
         self.logger.debug("PCSUnit and ISO have been reset.")
 
         # Reset internal state
-        energy_config: Dict[str, Any] = self.env_config.get('energy', {})
+        energy_config: Dict[str, Any] = self.pcs_unit_config['battery']['model_parameters']
         self.avg_price = 0.0
         self.energy_lvl = energy_config['init']
         self.reward_type = 0  # Default reward type
@@ -360,11 +392,11 @@ class EnergyNetEnv(gym.Env):
 
         if action > 0:
             # Buying to charge the battery
-            buy_amount = action
+            buy_amount = self.PCSUnit.get_energy_change()
             self.logger.debug(f"Action is charging: buy_amount set to {buy_amount} MW")
         elif action < 0:
             # Selling energy from the battery
-            sell_amount = abs(action)
+            sell_amount = abs(self.PCSUnit.get_energy_change())
             self.logger.debug(f"Action is discharging: sell_amount set to {sell_amount} MW")
 
         # Adjust buy and sell amounts based on production and consumption
@@ -384,9 +416,17 @@ class EnergyNetEnv(gym.Env):
         # Get pricing function from ISO
         pricing_function = self.ISO.get_pricing_function(observation_dict)
         self.logger.debug("Retrieved pricing function from ISO.")
+        
+        info: Dict[str, Any] = {
+            'buy_amount': buy_amount,
+            'sell_amount': sell_amount,
+            'pricing_function': pricing_function,  # Add pricing function to info
+            # Add more info as needed for reward computation
+        }
+        self.logger.debug(f"Info for reward computation: {info}")
 
-        # Calculate reward using pricing function
-        reward: float = pricing_function(buy_amount, sell_amount)
+        # Calculate reward 
+        reward: float = self.reward.compute_reward(info)
         self.logger.debug(f"Calculated reward: {reward} based on buy_amount: {buy_amount} and sell_amount: {sell_amount}")
 
         # Update energy level from PCSUnit's battery state
