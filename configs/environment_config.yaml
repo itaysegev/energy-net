@@ -1,19 +1,9 @@
 # configs/environment_config.yaml
 
-# Energy Parameters
-energy:
-  min: 0.0             # Minimum storage level (MWh)
-  max: 60.0            # Maximum storage level (MWh)
-  init: 30.0           # Initial storage level (MWh)
-  charge_rate_max: 4.0 # Max charge rate (MW)
-  discharge_rate_max: 2.0 # Max discharge rate (MW)
-  charge_efficiency: 0.4  # Charge efficiency
-  discharge_efficiency: 0.6 # Discharge efficiency
-
 # Time Parameters
 time:
   step_duration: 5     # Time step duration (minutes)
-  max_steps_per_episode: 288 # Steps per episode (one day)
+  max_steps_per_episode: 864 # Steps per episode (3 days)
 
 # Pricing Parameters
 pricing:
@@ -24,3 +14,6 @@ iso_config_path: "configs/iso_config.yaml"
 
 # PCSUnit Configuration Reference
 pcs_unit_config_path: "configs/pcs_unit_config.yaml"
+
+reward:
+  type: 'cost' 

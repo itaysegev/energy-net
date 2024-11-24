@@ -7,9 +7,9 @@ battery:
     min: 0.0                              # Minimum state of charge (MWh)
     max: 100.0                            # Maximum state of charge (MWh)
     charge_rate_max: 4.0                    # Maximum charging rate (MW)
-    discharge_rate_max: 2.0                 # Maximum discharging rate (MW)
-    charge_efficiency: 0.4                 # Charging efficiency (0 < charge_efficiency <= 1)
-    discharge_efficiency: 0.6              # Discharging efficiency (0 < discharge_efficiency <= 1)
+    discharge_rate_max: 4.0                 # Maximum discharging rate (MW)
+    charge_efficiency: 1.0                 # Charging efficiency (0 < charge_efficiency <= 1)
+    discharge_efficiency: 1.0              # Discharging efficiency (0 < discharge_efficiency <= 1)
     init: 30.0                             # Initial state of charge (MWh)
     lifetime_constant: 100.0               # Lifetime constant (> 0), adjust as needed
 
